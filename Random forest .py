@@ -13,10 +13,8 @@ from keras import models
 from keras import layers
 from  sklearn import svm
 import sklearn
-import seaborn as sns
+from sklearn import linear_model
 
-from sklearn.svm import LinearSVC
-from sklearn.metrics import confusion_matrix
 
 header = 'filename chroma_stft rmse spectral_centroid spectral_bandwidth rolloff zero_crossing_rate'
 for i in range(1, 21):
@@ -28,7 +26,7 @@ file = open('data.csv', 'w', newline='')
 with file:
     writer = csv.writer(file)
     writer.writerow(header)
-songs = ' classical country minge pak pop'.split()
+songs = 'minge' 'pak' 'classical ' 'country ' 'pop'.split()
 for g in songs:
     for filename in os.listdir(f'./songs/{g}'):
         songname = f'./songs/{g}/{filename}'
@@ -52,8 +50,10 @@ for g in songs:
 # reading dataset from csv
 
 data = pd.read_csv('data.csv', error_bad_lines=False, quoting=csv.QUOTE_NONE, warn_bad_lines=False)
-data.head()
+
+# data.head()
 print(data)
+# data.to_excel('test.xlsx') for csv files as a excel file
 
 # Dropping unneccesary columns
 data = data.drop(['filename'], axis=1)
@@ -64,37 +64,38 @@ encoder = LabelEncoder()
 y = encoder.fit_transform(genre_list)
 print(y)
 
+
 # normalizing
 scaler = StandardScaler()
 X = scaler.fit_transform(np.array(data.iloc[:, :-1], dtype=float))
-# x_train, x_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y, test_size = 0.2)
-X_train, X_test, y_train, y_test =sklearn.model_selection.train_test_split(X, y, test_size=0.2)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3) # 70% training and 30% test
+from sklearn.ensemble import RandomForestClassifier
 
-#print(x_train, y_train)
-label = ['minge' 'pak' 'classical ' 'country ' 'pop']
-k_range = range(1, 26)
-score = {} 
-score_list= []
-import numpy as np
+#Create a Gaussian Classifier
+clf=RandomForestClassifier(n_estimators=100)
+
+#Train the model using the training sets y_pred=clf.predict(X_test)
+clf.fit(X_train,y_train)
+
+y_pred=clf.predict(X_test)
+from sklearn import metrics
+print("Accuracy:",metrics.accuracy_score(y_test, y_pred))
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap
-from sklearn import datasets
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import plot_roc_curve
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import (KNeighborsClassifier,
-                               NeighborhoodComponentsAnalysis)
-from sklearn.pipeline import Pipeline
-for k in k_range: knn = KNeighborsClassifier(n_neighbors= 9) 
-knn.fit(X_train,y_train)
-y_pred = knn.predict(X_test) 
-score[k] = sklearn.metrics.accuracy_score(y_test, y_pred) 
-score_list.append(sklearn.metrics.accuracy_score(y_test, y_pred)) 
-plt.plot(k_range,score_list)
-plt.xlabel(' value of k for KNN') 
-plt.ylabel('testing accuracy')
-plt.show() 
-print(score[k])
-names = ["minge", "pak"]
-predicted = knn.predict(X_test) 
-print(predicted)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=42)
+svc = SVC(kernel= "linear" , C = 2 ,random_state=42)
+svc.fit(X_train, y_train)
+svc_disp = plot_roc_curve(svc, X_test, y_test)
+plt.show()
+
+rfc = RandomForestClassifier(n_estimators=10, random_state=42)
+rfc.fit(X_train, y_train)
+ax = plt.gca()
+rfc_disp = plot_roc_curve(rfc, X_test, y_test, ax=ax, alpha=0.8)
+svc_disp.plot(ax=ax, alpha=0.8)
+plt.show()
 

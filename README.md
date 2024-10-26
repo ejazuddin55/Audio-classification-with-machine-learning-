@@ -18,3 +18,7 @@ feeding the audio features in CSV into to above-mentioned algorithms
 # step 3
 analyzing the data with the help of Python libraries 
 
+# plotting the Data 
+
+# CNN
+
